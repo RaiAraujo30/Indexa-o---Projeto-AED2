@@ -12,7 +12,7 @@ void inicializar(arvore_bst *raiz) {
 int inicializarTabela(tabela *tab) {
 	tab->indice_bst = NULL;
 	inicializar((no_bst **)&tab->indice_bst);	
-	tab->arquivo_dados = fopen("dados.dat", "a+b");
+	tab->arquivo_dados = fopen("dados.dat", "r+b");
     tab->indice_bst = carregar_arquivo("indice_bst.dat", &tab->indice_bst);
 	if(tab->arquivo_dados != NULL)
 		return 1;
@@ -46,7 +46,10 @@ dado * ler_dados() {
 }
 
 void tirar_enter(char *string) {
-	string[strlen(string) -1] = '\0';
+	size_t length = strlen(string);
+    if (length > 0 && string[length - 1] == '\n') {
+        string[length - 1] = '\0';  // Substituir '\n' por '\0'
+    }
 }
 
 void salvar_arquivo(char *nome, arvore_bst a) {
@@ -85,6 +88,14 @@ arvore_bst carregar_arquivo(char *nome, arvore_bst *a) {
 	return *a;
 }
 
+void atualizar_indices_bst(arvore_bst raiz, int novo_indice) {
+    if (raiz != NULL) {
+        raiz->dado->indice = novo_indice;
+        atualizar_indices_bst(raiz->esq, novo_indice);
+        atualizar_indices_bst(raiz->dir, novo_indice);
+    }
+}
+
 
 void adicionarAluno(tabela *tab, dado *aluno) {
     if (tab->arquivo_dados != NULL) {
@@ -94,7 +105,8 @@ void adicionarAluno(tabela *tab, dado *aluno) {
             exit(EXIT_FAILURE);
         }
 
-        novo->chave_nome = aluno->nome;
+		novo->chave_nome = strdup(aluno->nome);
+		tirar_enter(novo->chave_nome);
 
         fseek(tab->arquivo_dados, 0L, SEEK_END);
         novo->indice = ftell(tab->arquivo_dados);
@@ -102,7 +114,13 @@ void adicionarAluno(tabela *tab, dado *aluno) {
 
 
         fwrite(aluno, sizeof(tipo_dado), 1, tab->arquivo_dados);
+		fwrite(&aluno->matricula, sizeof(int), 1, tab->arquivo_dados);
+		fwrite(&aluno->idade, sizeof(int), 1, tab->arquivo_dados);
+		fwrite(&aluno->media, sizeof(float), 1, tab->arquivo_dados);
+
         tab->indice_bst = adicionar(novo, tab->indice_bst);
+		// Atualizar os índices na árvore BST
+        atualizar_indices_bst(tab->indice_bst, novo->indice);
     }
 }
 
@@ -210,10 +228,10 @@ void imprimir_elemento(arvore_bst raiz, tabela * tab) {
     printf("indice: %d\n", raiz->dado->indice);
 
    	fseek(tab->arquivo_dados, raiz->dado->indice, SEEK_SET);
-	//
+	
 	int r = fread(temp, sizeof(dado), 1, tab->arquivo_dados);
 
-	printf("[%s, %d, %s, %d, %d, %f.2, %s ]\n", raiz->dado->chave_nome,r, temp->curso, temp->idade, temp->matricula, temp->media, temp->nome);
+	printf("[%s, %s, %d, %d, %.2f]\n", raiz->dado->chave_nome, temp->curso, temp->idade, temp->matricula, temp->media);
 	free(temp);
 }
 
@@ -258,4 +276,21 @@ arvore_bst remover_bst(char *valor, arvore_bst raiz) {
 
     return raiz;
 }
+
+int buscar_indice_bst(char *chave_nome, arvore_bst raiz) {
+    if (raiz == NULL) {
+        return -1;  // Chave não encontrada na árvore
+    }
+
+    int comparacao = comparar_nomes(chave_nome, raiz->dado->chave_nome);
+
+    if (comparacao == 0) {
+        return raiz->dado->indice;  // Chave encontrada, retornar o índice
+    } else if (comparacao < 0) {
+        return buscar_indice_bst(chave_nome, raiz->esq);  // Buscar na subárvore esquerda
+    } else {
+        return buscar_indice_bst(chave_nome, raiz->dir);  // Buscar na subárvore direita
+    }
+}
+
 

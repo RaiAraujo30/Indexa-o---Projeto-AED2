@@ -10,7 +10,7 @@
 typedef struct tabela {
     FILE *arquivo_dados;
     arvore_bst indice_bst;
-    // arvore_avl *indice_avl;
+    arvoreAVL indice_avl;
     // arvore_rb *indice_rb;
 } tabela;
 

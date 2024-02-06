@@ -10,8 +10,8 @@ typedef struct indice {
 } tipo_dado;
 
 typedef struct aluno {
-    char nome[81];
-    char curso[50];
+    char nome[3];
+    char curso[3];
     int matricula;
     int idade;
     float media;
@@ -42,7 +42,10 @@ dado * ler_dados();
 void adicionarAluno(tabela *tab, dado *aluno);
 void salvar_arquivo(char *nome, arvore_bst a);
 void salvar_auxiliar(arvore_bst raiz, FILE *arq);
+void atualizar_indices_bst(arvore_bst raiz, int novo_indice);
 arvore_bst carregar_arquivo(char *nome, arvore_bst *a);
-
+int buscar_indice_bst(char *chave_nome, arvore_bst raiz);
+dado encontrar_aluno_por_indice(int indice, arvore_bst raiz);
+void finalizar (tabela *tab);
 
 #endif

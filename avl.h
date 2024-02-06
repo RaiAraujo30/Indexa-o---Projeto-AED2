@@ -1,51 +1,46 @@
-// #ifndef AVL_H
-// #define AVL_H
+#ifndef BST_H
+#define BST_H
 
-// #include "tabela.h"
+typedef struct tabela tabela;
 
-// typedef struct aluno {
-//     char nome[81];
-//     char curso[50];
-//     int matricula;
-//     int idade;
-//     float media;
-// } dado;
+typedef struct indice {
+	int chave;
+	int indice; //posição no arquivo do primeiro byte do registro
+} tipo_dado;
 
+typedef struct aluno {
+    char nome[3];
+    char curso[3];
+    int matricula;
+    int idade;
+    float media;
+} dado;
 
-// typedef struct indice {
-// 	int matricula;
-// 	int indice; //posição no arquivo do primeiro byte do registro
-// } tipo_dado;
+typedef struct no {
+    int valor;
+    tipo_dado *dado;
+    int fb;
+    int inidice;
+    struct no* esq, *dir;
+} no;
 
+typedef no* arvoreAVL;
 
-// typedef struct no {
-//     int valor;
-//     int fb;
-//     struct no *esq;
-//     struct no *dir;
-// } no;
-
-// typedef no* arvore_avl;
-
-
-// arvore_avl inserir (arvore_avl raiz, int valor, int *cresceu) ;
-
-// arvore_avl rotacao (arvore_avl pivo);
-
-// void preorder(arvore_avl raiz);
-// void inorder(arvore_avl raiz);
-// void posorder(arvore_avl raiz);
-
-// int somatorio(arvore_avl raiz);
-// arvore_avl busca(arvore_avl raiz, int valor);
-// void dobrar_valores(arvore_avl raiz);
-// void mesclar (arvore_avl raiz1, arvore_avl raiz2);
-// void descendentes(arvore_avl raiz, int valor);
-// void ascendentes(arvore_avl raiz, int valor);
-
-// arvore_avl remover_avl (arvore_avl raiz, int valor) ;
+arvoreAVL inserir_avl(arvoreAVL raiz, int valor, int *cresceu);
+void pre_order_Avl(arvoreAVL raiz);
+void in_order_Avl(arvoreAVL raiz);
+void pos_order_Avl(arvoreAVL raiz);
+int somatorio_Avl(arvoreAVL raiz);
+arvoreAVL busca_Avl(int valor, arvoreAVL raiz);
+void dobrar_Avl(arvoreAVL raiz);
+void exibir_reverso_Avl(arvoreAVL raiz);
+int qtd_par_Avl(arvoreAVL raiz);
+int somatorio_par_Avl(arvoreAVL raiz);
+int pai_Avl(arvoreAVL raiz, int i);
+arvoreAVL podar_Avl(arvoreAVL raiz, int i);
+int altura(arvoreAVL raiz);
+arvoreAVL descendentes_Avl(int valor, arvoreAVL raiz);
+arvoreAVL remover_Avl(arvoreAVL raiz, int valor);
 
 
-
-
-// #endif
+#endif

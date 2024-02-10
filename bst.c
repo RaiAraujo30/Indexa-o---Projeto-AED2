@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "bst.h"
 #include "tabela.h"
+#include "aluno.h"
 #include <string.h>
 
 
@@ -10,10 +11,9 @@ void inicializar(arvore_bst *raiz) {
 }
 
 int inicializarTabela(tabela *tab) {
-	tab->indice_bst = NULL;
-	inicializar((no_bst **)&tab->indice_bst);	
-	tab->arquivo_dados = fopen("dados.dat", "r+b");
-    tab->indice_bst = carregar_arquivo("indice_bst.dat", &tab->indice_bst);
+	inicializar(&tab->indice_bst);	
+	tab->arquivo_dados = fopen("dados.dat", "a+b");
+	tab->indice_bst = carregar_arquivo("indices.dat", tab->indice_bst);
 	if(tab->arquivo_dados != NULL)
 		return 1;
 	else
@@ -46,10 +46,7 @@ dado * ler_dados() {
 }
 
 void tirar_enter(char *string) {
-	size_t length = strlen(string);
-    if (length > 0 && string[length - 1] == '\n') {
-        string[length - 1] = '\0';  // Substituir '\n' por '\0'
-    }
+	string[strlen(string) -1] = '\0';
 }
 
 void salvar_arquivo(char *nome, arvore_bst a) {
@@ -63,30 +60,31 @@ void salvar_arquivo(char *nome, arvore_bst a) {
 
 void salvar_auxiliar(arvore_bst raiz, FILE *arq){
 	if(raiz != NULL) {
-		fwrite(raiz->dado, sizeof(tipo_dado), 1, arq);
+		fwrite(raiz->dado, sizeof(tipo_bst), 1, arq);
 		salvar_auxiliar(raiz->esq, arq);
 		salvar_auxiliar(raiz->dir, arq);
 	}
 
 }
 
-arvore_bst carregar_arquivo(char *nome, arvore_bst *a) {
+arvore_bst carregar_arquivo(char *nome, arvore_bst a) {
 	FILE *arq;
 	arq = fopen(nome, "rb");
-	tipo_dado * temp;
+	tipo_bst * temp;
 	if(arq != NULL) {
-		temp = (tipo_dado *) malloc(sizeof(tipo_dado));
-		while(fread(temp, sizeof(tipo_dado), 1, arq)) {
+		temp = (tipo_bst *) malloc(sizeof(tipo_bst));
+		while(fread(temp, sizeof(tipo_bst), 1, arq)) {
 			
-		    *a = adicionar(temp, *a);			
-			temp = (tipo_dado *) malloc(sizeof(tipo_dado));
+			a = adicionar(temp, a);			
+			temp = (tipo_bst *) malloc(sizeof(tipo_bst));
 
 		}
 		fclose(arq);
 
 	}
-	return *a;
+	return a;
 }
+
 
 void atualizar_indices_bst(arvore_bst raiz, int novo_indice) {
     if (raiz != NULL) {
@@ -97,86 +95,59 @@ void atualizar_indices_bst(arvore_bst raiz, int novo_indice) {
 }
 
 
-void adicionarAluno(tabela *tab, dado *aluno) {
-    if (tab->arquivo_dados != NULL) {
-        tipo_dado *novo = (tipo_dado *)malloc(sizeof(tipo_dado));
-        if (novo == NULL) {
-            fprintf(stderr, "Erro: Falha na alocação de memória no adicionarAluno.\n");
-            exit(EXIT_FAILURE);
-        }
+void adicionarAluno(tabela *tab, dado *aluno){
+	if(tab->arquivo_dados != NULL) {
+			tipo_bst * novo = (tipo_bst *) malloc(sizeof(tipo_bst));
 
-		novo->chave_nome = strdup(aluno->nome);
-		tirar_enter(novo->chave_nome);
+			novo->matricula = aluno->matricula;
 
-        fseek(tab->arquivo_dados, 0L, SEEK_END);
-        novo->indice = ftell(tab->arquivo_dados);
+			fseek(tab->arquivo_dados, 0L, SEEK_END);
+			novo->indice = ftell(tab->arquivo_dados);
 
-
-
-        fwrite(aluno, sizeof(tipo_dado), 1, tab->arquivo_dados);
-		fwrite(&aluno->matricula, sizeof(int), 1, tab->arquivo_dados);
-		fwrite(&aluno->idade, sizeof(int), 1, tab->arquivo_dados);
-		fwrite(&aluno->media, sizeof(float), 1, tab->arquivo_dados);
-
-        tab->indice_bst = adicionar(novo, tab->indice_bst);
-		// Atualizar os índices na árvore BST
-        atualizar_indices_bst(tab->indice_bst, novo->indice);
-    }
-}
-
-int comparar_nomes(const char *nome1, const char *nome2) {
-    return strcmp(nome1, nome2);
-}
-
-arvore_bst adicionar(tipo_dado *valor, arvore_bst raiz) {
-    if (raiz == NULL) {
-        arvore_bst novo = (arvore_bst)malloc(sizeof(struct no_bst));
-        if (novo == NULL) {
-            fprintf(stderr, "Erro: Falha na alocação de memória no adicionar.\n");
-            exit(EXIT_FAILURE);
-        }
-        novo->dado = (tipo_dado *)malloc(sizeof(tipo_dado));
-        if (novo->dado == NULL) {
-            free(novo);
-            fprintf(stderr, "Erro: Falha na alocação de memória no adicionar.\n");
-            exit(EXIT_FAILURE);
-        }
-        // Usar strncpy para copiar os dados da estrutura
-        strncpy(novo->dado->chave_nome, valor->chave_nome, sizeof(novo->dado->chave_nome) - 1);
-        novo->dado->chave_nome[sizeof(novo->dado->chave_nome) - 1] = '\0';  // Garantir que o campo termine com '\0'
-        novo->dado->indice = valor->indice;
-        novo->esq = NULL;
-        novo->dir = NULL;
-        return novo;
-    }
-
-    int comparacao = comparar_nomes(valor->chave_nome, raiz->dado->chave_nome);
-
-    if (comparacao > 0) {
-        raiz->dir = adicionar(valor, raiz->dir);
-    } else if (comparacao < 0) {
-        raiz->esq = adicionar(valor, raiz->esq);
-    }
-    return raiz;
-}
-
-
-
-int altura(arvore_bst raiz) {
-	if(raiz == NULL) {
-		return 0;
+			fwrite(aluno, sizeof(dado), 1, tab->arquivo_dados);
+			tab->indice_bst = adicionar(novo, tab->indice_bst);
 	}
-	return 1 + maior(altura(raiz->dir), altura(raiz->esq));
 }
 
-int maior(int a, int b) {
-	if(a > b)
-		return a;
-	else
-		return b;
+
+
+arvore_bst adicionar (tipo_bst *valor, arvore_bst raiz) {
+	if(raiz == NULL) {
+		arvore_bst novo = (arvore_bst) malloc(sizeof(struct no_bst));
+		novo->dado = valor;
+		novo->esq = NULL;
+		novo->dir = NULL;
+		return novo;
+	}
+
+	if(valor->matricula > raiz->dado->matricula) {
+		raiz->dir = adicionar(valor, raiz->dir);
+	} else {
+		raiz->esq = adicionar(valor, raiz->esq);
+	}
+	return raiz;
 }
 
-tipo_dado * maior_elemento(arvore_bst raiz) {
+
+// int maior(arvore_bst no) {
+//     // Encontrar o elemento mais à direita da árvore
+//     while (no->dir != NULL) {
+//         no = no->dir;
+//     }
+//     return no->dado;
+// }
+
+
+// int altura(arvore_bst raiz) {
+// 	if(raiz == NULL) {
+// 		return 0;
+// 	}
+// 	return 1 + maior(altura(raiz->dir), altura(raiz->esq));
+// }
+
+
+
+tipo_bst * maior_elemento(arvore_bst raiz) {
 	if(raiz == NULL)
 			return NULL;
 	if(raiz->dir == NULL)
@@ -185,7 +156,7 @@ tipo_dado * maior_elemento(arvore_bst raiz) {
 			return maior_elemento(raiz->dir);
 }
 
-tipo_dado * menor_elemento(arvore_bst raiz) {
+tipo_bst * menor_elemento(arvore_bst raiz) {
 	if(raiz == NULL)
 			return NULL;
 	if(raiz->esq == NULL)
@@ -220,77 +191,76 @@ void in_order(arvore_bst raiz, tabela *tab) {
 
 void imprimir_elemento(arvore_bst raiz, tabela * tab) {
 	dado * temp = (dado *) malloc (sizeof(dado));
-	if (temp == NULL) {
-        fprintf(stderr, "Erro: Falha na alocação de memória no imprimir_elemento\n");
-        exit(EXIT_FAILURE);
-    }
-    
+    temp->matricula = 1000;
     printf("indice: %d\n", raiz->dado->indice);
 
    	fseek(tab->arquivo_dados, raiz->dado->indice, SEEK_SET);
-	
+	//
 	int r = fread(temp, sizeof(dado), 1, tab->arquivo_dados);
 
-	printf("[%s, %s, %d, %d, %.2f]\n", raiz->dado->chave_nome, temp->curso, temp->idade, temp->matricula, temp->media);
+	printf("[%d, %d, %s, %s, %d, %2.f ]\n", raiz->dado->matricula,r, temp->nome, temp->curso, temp->idade, temp->media);
 	free(temp);
 }
 
-//Função para remover um nó da árvore BST por nome
-arvore_bst remover_bst(char *valor, arvore_bst raiz) {
-    if (raiz == NULL)
+
+arvore_bst remover_bst(arvore_bst raiz, int matricula) {
+    if (raiz == NULL) {
+        printf("Arvore vazia");
         return NULL;
-
-    if (strcmp(raiz->dado->chave_nome, valor) == 0) {
-        if (raiz->esq == NULL) {
-            return raiz->dir;
-        }
-        if (raiz->dir == NULL) {
-            return raiz->esq;
-        }
-
-        // Substituir o nó a ser removido pelo maior elemento da subárvore esquerda
-        tipo_dado *maior = maior_elemento(raiz->esq);
-        
-        // Fazer uma cópia dos dados
-        tipo_dado *copiamaior = (tipo_dado *)malloc(sizeof(tipo_dado));
-        if (copiamaior == NULL) {
-            // Lidar com falha na alocação de memória
-            exit(EXIT_FAILURE);
-        }
-        memcpy(copiamaior, maior, sizeof(tipo_dado));
-        
-        // Substituir o dado na raiz
-        free(raiz->dado);  // Liberar a memória dos dados antigos
-        raiz->dado = copiamaior;
-
-        raiz->esq = remover_bst(maior->chave_nome, raiz->esq);  // Recursivamente remover o nó
-
-        return raiz;
     }
 
-    if (strcmp(valor, raiz->dado->chave_nome) > 0) {
-        raiz->dir = remover_bst(valor, raiz->dir);
+    if (raiz->dado->matricula == matricula) {
+        // caso 1: elemento não possui filhos
+        if (raiz->dir == NULL && raiz->esq == NULL) {
+            free(raiz);
+            return NULL;
+        }
+
+        // caso 2a: elemento possui exatamente um filho(esq)
+        if (raiz->dir == NULL && raiz->esq != NULL) {
+            arvore_bst retorno = raiz->esq;
+            free(raiz);
+            return retorno;
+        }
+
+        // caso 2b: elemento possui exatamente um filho(dir)
+        if (raiz->esq == NULL && raiz->dir != NULL) {
+            arvore_bst retorno = raiz->dir;
+            free(raiz);
+            return retorno;
+        }
+
+        // caso 3: dois filhos
+        if (raiz->esq != NULL && raiz->dir != NULL) {
+            arvore_bst temp = raiz->esq;
+            arvore_bst maiorEsquerda = procuraMaiorEsquerda(temp);
+
+            // copiar o valor desse elemento para a raiz relativa
+            raiz->dado->matricula = maiorEsquerda->dado->matricula;
+
+            // remover a duplicata NA SUB-ÁRVORE ESQ
+            raiz->esq = remover_bst(raiz->esq, maiorEsquerda->dado->matricula);
+        }
     } else {
-        raiz->esq = remover_bst(valor, raiz->esq);
-    }
+		if(raiz->dado->matricula > matricula){
+            raiz->esq = remover_bst(raiz->esq, matricula);
+        } else {
+            raiz->dir = remover_bst(raiz->dir, matricula);
+        }
+	}
 
     return raiz;
 }
 
-int buscar_indice_bst(char *chave_nome, arvore_bst raiz) {
-    if (raiz == NULL) {
-        return -1;  // Chave não encontrada na árvore
-    }
 
-    int comparacao = comparar_nomes(chave_nome, raiz->dado->chave_nome);
+arvore_bst procuraMaiorEsquerda(arvore_bst raiz){
+    arvore_bst no1 = raiz;
+    arvore_bst no2 = raiz->dir;
 
-    if (comparacao == 0) {
-        return raiz->dado->indice;  // Chave encontrada, retornar o índice
-    } else if (comparacao < 0) {
-        return buscar_indice_bst(chave_nome, raiz->esq);  // Buscar na subárvore esquerda
-    } else {
-        return buscar_indice_bst(chave_nome, raiz->dir);  // Buscar na subárvore direita
-    }
+    while(no2 != NULL){
+        no1 = no2;
+        no2 =no2->dir;
+    }    
+    return no1;
 }
-
 

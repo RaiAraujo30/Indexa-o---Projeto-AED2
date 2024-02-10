@@ -1,46 +1,47 @@
-#ifndef BST_H
-#define BST_H
+// #ifndef AVL_H
+// #define AVL_H
 
-typedef struct tabela tabela;
+// #include "aluno.h"
 
-typedef struct indice {
-	int chave;
-	int indice; //posição no arquivo do primeiro byte do registro
-} tipo_dado;
+// typedef struct tabela tabela;
 
-typedef struct aluno {
-    char nome[3];
-    char curso[3];
-    int matricula;
-    int idade;
-    float media;
-} dado;
-
-typedef struct no {
-    int valor;
-    tipo_dado *dado;
-    int fb;
-    int inidice;
-    struct no* esq, *dir;
-} no;
-
-typedef no* arvoreAVL;
-
-arvoreAVL inserir_avl(arvoreAVL raiz, int valor, int *cresceu);
-void pre_order_Avl(arvoreAVL raiz);
-void in_order_Avl(arvoreAVL raiz);
-void pos_order_Avl(arvoreAVL raiz);
-int somatorio_Avl(arvoreAVL raiz);
-arvoreAVL busca_Avl(int valor, arvoreAVL raiz);
-void dobrar_Avl(arvoreAVL raiz);
-void exibir_reverso_Avl(arvoreAVL raiz);
-int qtd_par_Avl(arvoreAVL raiz);
-int somatorio_par_Avl(arvoreAVL raiz);
-int pai_Avl(arvoreAVL raiz, int i);
-arvoreAVL podar_Avl(arvoreAVL raiz, int i);
-int altura(arvoreAVL raiz);
-arvoreAVL descendentes_Avl(int valor, arvoreAVL raiz);
-arvoreAVL remover_Avl(arvoreAVL raiz, int valor);
+// typedef struct indice_avl {
+// 	int idade;
+// 	int indice; //posição no arquivo do primeiro byte do registro
+// } tipo_avl;
 
 
-#endif
+// typedef struct no {
+//     int valor;
+//     tipo_avl *dado;
+//     int fb;
+//     int inidice;
+//     struct no* esq, *dir;
+// } no;
+
+// typedef no* arvoreAVL;
+
+// arvoreAVL inserir_avl(arvoreAVL raiz, int valor,int idade ,int *cresceu);
+// void pre_order_Avl(arvoreAVL raiz);
+// void in_order_Avl(arvoreAVL raiz, tabela *tab);
+// void pos_order_Avl(arvoreAVL raiz);
+// int somatorio_Avl(arvoreAVL raiz);
+// arvoreAVL busca_Avl(int valor, arvoreAVL raiz);
+// void dobrar_Avl(arvoreAVL raiz);
+// void exibir_reverso_Avl(arvoreAVL raiz);
+// int qtd_par_Avl(arvoreAVL raiz);
+// int somatorio_par_Avl(arvoreAVL raiz);
+// int pai_Avl(arvoreAVL raiz, int i);
+// arvoreAVL podar_Avl(arvoreAVL raiz, int i);
+// int altura_Avl(arvoreAVL raiz);
+// arvoreAVL descendentes_Avl(int valor, arvoreAVL raiz);
+// arvoreAVL remover_Avl(arvoreAVL raiz, int valor);
+
+// void adicionarAlunoAvl(tabela *tab, dado *aluno);
+// void salvar_arquivoAvl(char *nome, arvoreAVL a);
+// int inicializarTabelaAvl(tabela *tab);
+// dado *ler_dados_avl();
+// arvoreAVL carregar_arquivoAvl(char *nome, arvoreAVL a, int *cresceu);
+// void finalizar(tabela *tab);
+
+// #endif

@@ -21,8 +21,8 @@ int inicializarTabela(tabela *tab) {
 }
 
 void finalizar (tabela *tab) {
-	fclose(tab->arquivo_dados);
 	salvar_arquivo("indice_bst.dat", tab->indice_bst);
+	fclose(tab->arquivo_dados);
 }
 
 
@@ -198,7 +198,7 @@ void imprimir_elemento(arvore_bst raiz, tabela * tab) {
 	//
 	int r = fread(temp, sizeof(dado), 1, tab->arquivo_dados);
 
-	printf("[%d, %d, %s, %s, %d, %2.f ]\n", raiz->dado->matricula,r, temp->nome, temp->curso, temp->idade, temp->media);
+	printf("\nMatricula: %d \nR:%d \nNome:%s \nCurso:%s \nIdade:%d \nMedia:%2.f \n", raiz->dado->matricula,r, temp->nome, temp->curso, temp->idade, temp->media);
 	free(temp);
 }
 

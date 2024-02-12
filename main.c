@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     tabela tab;
     int opcao;
         inicializarTabela(&tab);
-        //inicializarTabelaAvl(&tab);
+        
 
 
     while (1) {
@@ -33,8 +33,8 @@ int main(int argc, char *argv[]) {
 
         switch (opcao) {
             case 1:
-                // printf("Altura da arvore: %d\n", altura(tab.indice_bst));
-                // break;
+                printf("Altura da arvore: %d\n", altura_bst(tab.indice_bst));
+                break;
             case 2:
             {
 
@@ -46,10 +46,12 @@ int main(int argc, char *argv[]) {
             case 3:
                {
                     int matricula;
-                    printf("Digite a matricula do aluno a ser removido: ");
+                    printf("Digite o indice do aluno a ser removido: ");
                     scanf("%d", &matricula);
-
+                    int decresceu =0;
                     tab.indice_bst = remover_bst(tab.indice_bst, matricula);
+                    tab.indice_avl = remover_avl(tab.indice_avl, matricula, &decresceu);
+                    
                     break;
                 }
             case 4:
@@ -59,7 +61,7 @@ int main(int argc, char *argv[]) {
             case 5:
                  in_order_Avl(tab.indice_avl, &tab);
                 printf("\n");
-                break;
+                break;  
             case 6:
                salvar_arquivo("dados.dat", tab.indice_bst);
                salvar_arquivoAvl("dados.dat", tab.indice_avl);

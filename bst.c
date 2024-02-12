@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "bst.h"
 #include "avl.h"
+#include "rb.h"
 #include "tabela.h"
 #include "aluno.h"
 #include <string.h>
@@ -13,10 +14,12 @@ void inicializar(arvore_bst *raiz) {
 
 int inicializarTabela(tabela *tab) {
 	inicializar(&tab->indice_bst);	
-	inicializar_avl(&tab->indice_avl);	
+	inicializar_avl(&tab->indice_avl);
+	//inicializar_rb(&tab->indice_rb);
 	tab->arquivo_dados = fopen("dados.dat", "a+b");
 	tab->indice_bst = carregar_arquivo("indice_bst.dat", tab->indice_bst);
 	tab->indice_avl = carregar_arquivoAvl("indice_avl.dat", tab->indice_avl);
+	//tab->indice_rb = carregar_arquivo_rb("indice_rb.dat", tab->indice_rb);
 	if(tab->arquivo_dados != NULL)
 		return 1;
 	else
@@ -26,6 +29,7 @@ int inicializarTabela(tabela *tab) {
 void finalizar (tabela *tab) {
 	salvar_arquivo("indice_bst.dat", tab->indice_bst);
 	salvar_arquivoAvl("indice_avl.dat", tab->indice_avl);
+	//salvar_arquivo_rb("indice_rb.dat", tab->indice_rb);
 	fclose(tab->arquivo_dados);
 }
 
@@ -94,19 +98,23 @@ void adicionarAluno(tabela *tab, dado *aluno){
 	if(tab->arquivo_dados != NULL) {
 			tipo_bst * novo_bst = (tipo_bst *) malloc(sizeof(tipo_bst));
 			tipo_avl * novo_avl = (tipo_avl *) malloc(sizeof(tipo_avl));
+			tipo_rb * novo_rb = (tipo_rb *) malloc(sizeof(tipo_rb));
 
 			novo_bst->matricula = aluno->matricula;
 			novo_avl->idade = aluno->idade;
+			novo_rb->media = aluno->media;
 
 			fseek(tab->arquivo_dados, 0L, SEEK_END);
 			novo_bst->indice = ftell(tab->arquivo_dados);
 			novo_avl->indice = novo_bst->indice;
+			novo_rb->indice = novo_bst->indice;
 
 			int cresceu = 0;
 
 			fwrite(aluno, sizeof(dado), 1, tab->arquivo_dados);
 			tab->indice_bst = adicionar(novo_bst, tab->indice_bst);
 			tab->indice_avl = inserir_avl(tab->indice_avl,novo_avl,&cresceu);
+			//adicionar_rb(novo_rb, &tab->indice_rb);
 	}
 }
 
@@ -129,22 +137,29 @@ arvore_bst adicionar (tipo_bst *valor, arvore_bst raiz) {
 	return raiz;
 }
 
+// Função para encontrar o maior elemento na árvore BST
+int maior_bst(arvore_bst no) {
+    // Encontrar o elemento mais à direita da árvore
+    while (no->dir != NULL) {
+        no = no->dir;
+    }
+    return no->dado->matricula;
+}
 
-// int maior(arvore_bst no) {
-//     // Encontrar o elemento mais à direita da árvore
-//     while (no->dir != NULL) {
-//         no = no->dir;
-//     }
-//     return no->dado;
-// }
+// Função para calcular a altura da árvore BSTFi
+int altura_bst(arvore_bst raiz) {
+    if (raiz == NULL) {
+        return 0;
+    }
+    int altura_esq = altura_bst(raiz->esq);
+    int altura_dir = altura_bst(raiz->dir);
 
-
-// int altura(arvore_bst raiz) {
-// 	if(raiz == NULL) {
-// 		return 0;
-// 	}
-// 	return 1 + maior(altura(raiz->dir), altura(raiz->esq));
-// }
+    if (altura_esq > altura_dir) {
+        return 1 + altura_esq;
+    } else {
+        return 1 + altura_dir;
+    }
+}
 
 
 
@@ -204,13 +219,13 @@ void imprimir_elemento(arvore_bst raiz, tabela * tab) {
 }
 
 
-arvore_bst remover_bst(arvore_bst raiz, int matricula) {
+arvore_bst remover_bst(arvore_bst raiz, int indice) {
     if (raiz == NULL) {
         printf("Arvore vazia");
         return NULL;
     }
 
-    if (raiz->dado->matricula == matricula) {
+    if (raiz->dado->indice == indice) {
         // caso 1: elemento não possui filhos
         if (raiz->dir == NULL && raiz->esq == NULL) {
             free(raiz);
@@ -237,16 +252,16 @@ arvore_bst remover_bst(arvore_bst raiz, int matricula) {
             arvore_bst maiorEsquerda = procuraMaiorEsquerda(temp);
 
             // copiar o valor desse elemento para a raiz relativa
-            raiz->dado->matricula = maiorEsquerda->dado->matricula;
+            raiz->dado->indice = maiorEsquerda->dado->indice;
 
             // remover a duplicata NA SUB-ÁRVORE ESQ
-            raiz->esq = remover_bst(raiz->esq, maiorEsquerda->dado->matricula);
+            raiz->esq = remover_bst(raiz->esq, maiorEsquerda->dado->indice);
         }
     } else {
-		if(raiz->dado->matricula > matricula){
-            raiz->esq = remover_bst(raiz->esq, matricula);
+		if(raiz->dado->matricula > indice){
+            raiz->esq = remover_bst(raiz->esq, indice);
         } else {
-            raiz->dir = remover_bst(raiz->dir, matricula);
+            raiz->dir = remover_bst(raiz->dir, indice);
         }
 	}
 

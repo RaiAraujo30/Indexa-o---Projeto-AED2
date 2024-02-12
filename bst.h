@@ -23,7 +23,7 @@ typedef no_bst * arvore_bst;
 int inicializarTabela(tabela *tab);
 void inicializar_bst(arvore_bst *raiz);
 arvore_bst adicionar (tipo_bst *valor, arvore_bst raiz);
-int altura(arvore_bst raiz);
+int altura_bst(arvore_bst raiz);
 tipo_bst * maior_elemento(arvore_bst raiz);
 tipo_bst * menor_elemento(arvore_bst raiz);
 void pre_order(arvore_bst raiz, tabela *tab);

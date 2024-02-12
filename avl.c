@@ -10,20 +10,20 @@ void inicializar_avl(arvoreAVL *raiz) {
 }
 
 
-// Função para inicializar a tabela, incluindo_avl a leitura do arquivo de índice
-int inicializarTabelaAvl(tabela *tab) {
-    tab->indice_avl = NULL;
-    inicializar_avl((arvoreAVL *)&tab->indice_avl);
-    int cresceu = 0;
+// // Função para inicializar a tabela, incluindo_avl a leitura do arquivo de índice
+// int inicializarTabelaAvl(tabela *tab) {
+//     tab->indice_avl = NULL;
+//     inicializar_avl((arvoreAVL *)&tab->indice_avl);
+//     int cresceu = 0;
 
-    tab->arquivo_dados = fopen("dados.dat", "r+b");
-    tab->indice_avl = carregar_arquivoAvl("indice_avl.dat", tab->indice_avl);
+//     tab->arquivo_dados = fopen("dados.dat", "r+b");
+//     tab->indice_avl = carregar_arquivoAvl("indice_avl.dat", tab->indice_avl);
 
-    if (tab->arquivo_dados != NULL)
-        return 1;
-    else
-        return 0;
-}
+//     if (tab->arquivo_dados != NULL)
+//         return 1;
+//     else
+//         return 0;
+// }
 
 // Função para liberar a memória alocada pela árvore AVL e fechar o arquivo de dados
 void finalizar_avl(tabela *tab) {
@@ -105,7 +105,7 @@ arvoreAVL carregar_arquivoAvl(char *nome, arvoreAVL a) {
 void imprimir_elemento_avl(arvoreAVL raiz, tabela *tab) {
     dado *temp = (dado *)malloc(sizeof(dado));
     temp->idade = 1000;  // Consideração: Valor inicial arbitrário, ajuste conforme necessário
-    printf("indice: %d\n", raiz->dado->indice);
+    printf("\nindice: %d\n", raiz->dado->indice);
 
     fseek(tab->arquivo_dados, raiz->dado->indice, SEEK_SET);
 
@@ -405,7 +405,7 @@ int maior(arvoreAVL no) {
     return no->valor;
 }
 
-arvoreAVL remover_avl(arvoreAVL raiz, int idade, int *decresceu){
+arvoreAVL remover_avl(arvoreAVL raiz, int indice, int *decresceu){
 
     //caso base
     if(raiz == NULL){
@@ -415,7 +415,7 @@ arvoreAVL remover_avl(arvoreAVL raiz, int idade, int *decresceu){
     //caso geral
     else{
 
-        if(raiz->dado->idade == idade){
+        if(raiz->dado->indice == indice){
             //sem filhos
             if(raiz->esq == NULL && raiz->dir == NULL){
                 free(raiz);
@@ -443,9 +443,9 @@ arvoreAVL remover_avl(arvoreAVL raiz, int idade, int *decresceu){
                     while(nova->dir != NULL){
                         nova = nova->dir;
                     }
-                    raiz->dado->idade = nova->dado->idade;
+                    raiz->dado->indice = nova->dado->indice;
                     //nova->dado->idade ou idade??
-                    raiz->esq = remover_avl(raiz->esq, nova->dado->idade, decresceu);
+                    raiz->esq = remover_avl(raiz->esq, nova->dado->indice, decresceu);
 
                     switch (raiz->fb){
                         case 0:
@@ -480,8 +480,8 @@ arvoreAVL remover_avl(arvoreAVL raiz, int idade, int *decresceu){
 
         else{
             //chamadas recursivas
-            if(raiz->dado->idade > idade){
-                raiz->esq = remover_avl(raiz->esq, idade, decresceu);
+            if(raiz->dado->indice > indice){
+                raiz->esq = remover_avl(raiz->esq, indice, decresceu);
 
                 if(*decresceu) {
                     switch(raiz->fb){
@@ -505,8 +505,8 @@ arvoreAVL remover_avl(arvoreAVL raiz, int idade, int *decresceu){
                     }
                 }
             }
-            else if(raiz->dado->idade < idade){
-               raiz->dir = remover_avl(raiz->dir, idade, decresceu);
+            else if(raiz->dado->indice < indice){
+               raiz->dir = remover_avl(raiz->dir, indice, decresceu);
 
                 if(*decresceu){
                     switch(raiz->fb){

@@ -36,7 +36,7 @@ int pai_Avl(arvoreAVL raiz, int i);
 arvoreAVL podar_Avl(arvoreAVL raiz, int i);
 int altura_Avl(arvoreAVL raiz);
 arvoreAVL descendentes_Avl(int valor, arvoreAVL raiz);
-arvoreAVL remover_Avl(arvoreAVL raiz, int valor);
+arvoreAVL remover_avl(arvoreAVL raiz, int indice, int *decresceu);
 
 arvoreAVL buscaPorIdade(arvoreAVL raiz, int idade);
 void imprimir_elemento_avl(arvoreAVL raiz, tabela *tab);

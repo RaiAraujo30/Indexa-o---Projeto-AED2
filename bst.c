@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "bst.h"
+#include "avl.h"
 #include "tabela.h"
 #include "aluno.h"
 #include <string.h>
@@ -12,8 +13,10 @@ void inicializar(arvore_bst *raiz) {
 
 int inicializarTabela(tabela *tab) {
 	inicializar(&tab->indice_bst);	
+	inicializar_avl(&tab->indice_avl);	
 	tab->arquivo_dados = fopen("dados.dat", "a+b");
-	tab->indice_bst = carregar_arquivo("indices.dat", tab->indice_bst);
+	tab->indice_bst = carregar_arquivo("indice_bst.dat", tab->indice_bst);
+	tab->indice_avl = carregar_arquivoAvl("indice_avl.dat", tab->indice_avl);
 	if(tab->arquivo_dados != NULL)
 		return 1;
 	else
@@ -22,6 +25,7 @@ int inicializarTabela(tabela *tab) {
 
 void finalizar (tabela *tab) {
 	salvar_arquivo("indice_bst.dat", tab->indice_bst);
+	salvar_arquivoAvl("indice_avl.dat", tab->indice_avl);
 	fclose(tab->arquivo_dados);
 }
 
@@ -86,26 +90,23 @@ arvore_bst carregar_arquivo(char *nome, arvore_bst a) {
 }
 
 
-void atualizar_indices_bst(arvore_bst raiz, int novo_indice) {
-    if (raiz != NULL) {
-        raiz->dado->indice = novo_indice;
-        atualizar_indices_bst(raiz->esq, novo_indice);
-        atualizar_indices_bst(raiz->dir, novo_indice);
-    }
-}
-
-
 void adicionarAluno(tabela *tab, dado *aluno){
 	if(tab->arquivo_dados != NULL) {
-			tipo_bst * novo = (tipo_bst *) malloc(sizeof(tipo_bst));
+			tipo_bst * novo_bst = (tipo_bst *) malloc(sizeof(tipo_bst));
+			tipo_avl * novo_avl = (tipo_avl *) malloc(sizeof(tipo_avl));
 
-			novo->matricula = aluno->matricula;
+			novo_bst->matricula = aluno->matricula;
+			novo_avl->idade = aluno->idade;
 
 			fseek(tab->arquivo_dados, 0L, SEEK_END);
-			novo->indice = ftell(tab->arquivo_dados);
+			novo_bst->indice = ftell(tab->arquivo_dados);
+			novo_avl->indice = novo_bst->indice;
+
+			int cresceu = 0;
 
 			fwrite(aluno, sizeof(dado), 1, tab->arquivo_dados);
-			tab->indice_bst = adicionar(novo, tab->indice_bst);
+			tab->indice_bst = adicionar(novo_bst, tab->indice_bst);
+			tab->indice_avl = inserir_avl(tab->indice_avl,novo_avl,&cresceu);
 	}
 }
 
@@ -192,13 +193,13 @@ void in_order(arvore_bst raiz, tabela *tab) {
 void imprimir_elemento(arvore_bst raiz, tabela * tab) {
 	dado * temp = (dado *) malloc (sizeof(dado));
     temp->matricula = 1000;
-    printf("indice: %d\n", raiz->dado->indice);
+    printf("\nindice: %d\n", raiz->dado->indice);
 
    	fseek(tab->arquivo_dados, raiz->dado->indice, SEEK_SET);
 	//
 	int r = fread(temp, sizeof(dado), 1, tab->arquivo_dados);
 
-	printf("\nMatricula: %d \nR:%d \nNome:%s \nCurso:%s \nIdade:%d \nMedia:%2.f \n", raiz->dado->matricula,r, temp->nome, temp->curso, temp->idade, temp->media);
+	printf("Matricula: %d \nR:%d \nNome:%s \nCurso:%s \nIdade:%d \nMedia:%2.f \n", raiz->dado->matricula,r, temp->nome, temp->curso, temp->idade, temp->media);
 	free(temp);
 }
 
@@ -264,3 +265,15 @@ arvore_bst procuraMaiorEsquerda(arvore_bst raiz){
     return no1;
 }
 
+
+arvore_bst buscar_bst(arvore_bst raiz, int matricula) {
+    if (raiz == NULL || raiz->dado->matricula == matricula) {
+        return raiz;
+    }
+
+    if (matricula < raiz->dado->matricula) {
+        return buscar_bst(raiz->esq, matricula);
+    } else {
+        return buscar_bst(raiz->dir, matricula);
+    }
+}

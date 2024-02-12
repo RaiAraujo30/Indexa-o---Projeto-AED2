@@ -17,7 +17,7 @@ int inicializarTabelaAvl(tabela *tab) {
     int cresceu = 0;
 
     tab->arquivo_dados = fopen("dados.dat", "r+b");
-    tab->indice_avl = carregar_arquivoAvl("indice_avl.dat", tab->indice_avl, &cresceu);
+    tab->indice_avl = carregar_arquivoAvl("indice_avl.dat", tab->indice_avl);
 
     if (tab->arquivo_dados != NULL)
         return 1;
@@ -81,7 +81,7 @@ void salvar_arquivoAvl(char *nome, arvoreAVL a) {
 
 
 // Função para carregar a árvore AVL a partir de um arquivo
-arvoreAVL carregar_arquivoAvl(char *nome, arvoreAVL a, int *cresceu) {
+arvoreAVL carregar_arquivoAvl(char *nome, arvoreAVL a) {
     FILE *arq;
     arq = fopen(nome, "rb");
     tipo_avl *temp;
@@ -90,12 +90,13 @@ arvoreAVL carregar_arquivoAvl(char *nome, arvoreAVL a, int *cresceu) {
         temp = (tipo_avl *)malloc(sizeof(tipo_avl));
         while (fread(temp, sizeof(tipo_avl), 1, arq)) {
 
-            a = inserir_avl(a, temp->indice, temp->idade, cresceu);
+           
+            a = inserir_avl(a, temp,NULL);
 
             
         }
-        free(temp);
         fclose(arq);
+        free(temp);
     }
 
     return a;
@@ -129,22 +130,25 @@ void imprimir_elemento_avl(arvoreAVL raiz, tabela *tab) {
 // Função para adicionar um aluno à tabela
 void adicionarAlunoAvl(tabela *tab, dado *aluno){
     int cresceu = 0;
-	if(tab->arquivo_dados != NULL) {
-			tipo_avl * novo = (tipo_avl *) malloc(sizeof(tipo_avl));
+    if(tab->arquivo_dados != NULL) {
+        tipo_avl * novo = (tipo_avl *) malloc(sizeof(tipo_avl));
 
-			novo->idade = aluno->idade;
+        novo->idade = aluno->idade;
 
-			fseek(tab->arquivo_dados, 0L, SEEK_END);
-			novo->indice = ftell(tab->arquivo_dados);
+        fseek(tab->arquivo_dados, 0L, SEEK_END);
+        novo->indice = ftell(tab->arquivo_dados);
 
-			if (fwrite(aluno, sizeof(dado), 1, tab->arquivo_dados) != 1) {
+        if (fwrite(aluno, sizeof(dado), 1, tab->arquivo_dados) != 1) {
             fprintf(stderr, "Erro ao escrever dados no arquivo.\n");
             free(novo);
             return;  // Tratamento de erro na escrita no arquivo
         }
-        
-	}
+
+        // Inserir na árvore AVL
+        tab->indice_avl = inserir_avl(tab->indice_avl, novo, &cresceu);
+    }
 }
+
 
 
 
@@ -270,81 +274,60 @@ arvoreAVL rotacao_avl(arvoreAVL pivo) {
     return pivo;
 }
 
-
-
-arvoreAVL inserir_avl(arvoreAVL raiz, int valor,int idade ,int *cresceu){
-    //caso base
+arvoreAVL inserir_avl(arvoreAVL raiz, tipo_avl *valor, int *cresceu){
     if(raiz == NULL) {
-        //1. Alocar espaço em memória
         arvoreAVL nova = (arvoreAVL) malloc(sizeof(struct no));
-        //2. Inicializar o novo nó
-        nova->valor = valor;
         nova->esq = NULL;
         nova->dir = NULL;
         nova->fb = 0;
-        nova->dado->idade = idade;
+        nova->dado = valor;
 
-        //3. Retornar o ponteiro para a raiz (relativa) da nova árvore
         *cresceu = 1;
         return nova;
-    }
-    //caso indutivo
-    else {
-        if(idade > raiz->dado->idade) {
-            raiz->dir = inserir_avl(raiz->dir, valor, idade, cresceu);
-            //após inserir_avl, é preciso atualizar os fatores de balanço
-            //fator de balanço "atual" => raiz->fb
-            //sub-árvore cresceu ou não => *cresceu
-            if(*cresceu) {
+    } else {
+        if (valor->idade > raiz->dado->idade) {
+            raiz->dir = inserir_avl(raiz->dir, valor, cresceu);
+
+            if (*cresceu) {
                 switch(raiz->fb) {
                     case 0:
                         raiz->fb = 1;
-                        *cresceu = 1;
+                        *cresceu = 0;
                         break;
                     case 1:
-                        *cresceu = 0;
+                        *cresceu = 1;
                         return rotacao_avl(raiz);
                         break;
                     case -1:
-                         raiz->fb = 0;
+                        raiz->fb = 0;
                         *cresceu = 0;
                         break;
                 }
             }
         } else {
-            raiz->esq = inserir_avl(raiz->esq, valor, idade, cresceu);
-            if(*cresceu) {
+            raiz->esq = inserir_avl(raiz->esq, valor, cresceu);
+
+            if (*cresceu) {
                 switch(raiz->fb) {
                     case 0:
                         raiz->fb = -1;
-                        *cresceu = 1;
+                        *cresceu = 0;
                         break;
                     case 1:
                         raiz->fb = 0;
                         *cresceu = 0;
                         break;
                     case -1:
-                        *cresceu = 0;
+                        *cresceu = 1;
                         return rotacao_avl(raiz);
                         break;
                 }
+            }
         }
-    }
-    return raiz;
-}
-}
-
-
-
-
-void pre_order_Avl(arvoreAVL raiz){
-    if(raiz != NULL){
-        printf("[%d]", raiz->valor);
-
-        pre_order_Avl(raiz->esq);
-        pre_order_Avl(raiz->dir);
+        return raiz;
     }
 }
+
 
 void in_order_Avl(arvoreAVL raiz, tabela *tab) {
 	if(raiz != NULL) {
@@ -352,40 +335,6 @@ void in_order_Avl(arvoreAVL raiz, tabela *tab) {
 		imprimir_elemento_avl(raiz, tab);
 		in_order_Avl(raiz->dir, tab);
 	}
-}
-
-
-void pos_order_Avl(arvoreAVL raiz){
-    if(raiz != NULL){
-        pos_order_Avl(raiz->esq);
-        pos_order_Avl(raiz->dir);
-        printf("[%d]", raiz->valor);
-    }
-}
-
-void exibir_reverso_Avl(arvoreAVL raiz){
-    if(raiz != NULL) {
-      
-    exibir_reverso_Avl(raiz->dir);
-    printf("[%d]", raiz->valor);
-    exibir_reverso_Avl(raiz->esq);
-    
-    
-}
-}
-int qtd_par_Avl(arvoreAVL raiz){
-    if (raiz == NULL) {
-        return 0; 
-    }
-    int contador = 0;
-
-    if(raiz->valor % 2 == 0){
-       contador++; 
-    }  
-    contador += qtd_par_Avl(raiz->esq);
-    contador += qtd_par_Avl(raiz->dir);
-
-    return contador;
 }
 
 int pai_Avl(arvoreAVL raiz, int i){
@@ -410,48 +359,6 @@ int pai_Avl(arvoreAVL raiz, int i){
 
 }
 
-int somatorio_Avl(arvoreAVL raiz) {
-    if (raiz == NULL) {
-        return 0; 
-    }
-
-    int soma = raiz->valor; 
-    soma += somatorio_Avl(raiz->esq);
-    soma += somatorio_Avl(raiz->dir); 
-
-    return soma;
-}
-
-int somatorio_par_Avl(arvoreAVL raiz){
-     if (raiz == NULL) {
-        return 0; 
-    }
-
-    int soma = 0;
-
-    if (raiz->valor % 2 == 0){
-        soma += raiz->valor;
-    }
-    soma += somatorio_par_Avl(raiz->esq);
-    soma += somatorio_par_Avl(raiz->dir);
-
-    return soma;
-
-    }
-
-arvoreAVL podar_Avl(arvoreAVL raiz, int i){
-    if (raiz == NULL) {
-        return 0; 
-    }
-    if (raiz->valor == i){
-        raiz->esq = NULL;
-        raiz->dir = NULL;
-    }
-    podar_Avl(raiz->esq, i);
-    podar_Avl(raiz->dir, i);
-
-    return raiz;
-}
 
 arvoreAVL busca_Avl(int valor, arvoreAVL raiz) {
     if (raiz == NULL) {
@@ -468,43 +375,6 @@ arvoreAVL busca_Avl(int valor, arvoreAVL raiz) {
         }
     }
 }
-
-void dobrar_Avl(arvoreAVL raiz){
-    int dobro;
-    if(raiz != NULL){
-        dobro = (raiz->valor) * (raiz->valor);
-        printf("[%d]", dobro);
-        dobrar_Avl(raiz->esq);
-        dobro = (raiz->valor) * (raiz->valor);  
-        dobrar_Avl(raiz->dir);
-    }
-
-}
-
-
-void filhos(arvoreAVL filha) {
-    if (filha != NULL) {
-        filhos(filha->esq);
-        printf("[%d]", filha->valor);
-        filhos(filha->dir);
-    }
-}
-arvoreAVL descendentes_Avl(int valor,arvoreAVL raiz){
-    
-    if (raiz->valor == valor ){
-        printf("Descendentes de [%d]: ", raiz->valor);
-        filhos(raiz);
-        printf("\n");
-    } else{
-        if(valor >= raiz->valor){
-            return  descendentes_Avl(valor, raiz->dir);
-        } else{
-            return  descendentes_Avl(valor, raiz->esq);
-        }
-    }
-}
-
-
 int altura_Avl(arvoreAVL raiz){
     if (raiz == NULL) {
         return 0; 
@@ -534,18 +404,6 @@ int maior(arvoreAVL no) {
     }
     return no->valor;
 }
-
-// int fator_balanceamento(arvoreAVL N) {
-//     if (N == NULL)
-//         return 0;
-
-//     // Calcular a altura da subárvore esquerda e direita
-//     int altura_esq = altura(N->esq);
-//     int altura_dir = altura(N->dir);
-
-//     // Calcular e retornar o fator de balanceamento
-//     return altura_esq - altura_dir;
-// }
 
 arvoreAVL remover_avl(arvoreAVL raiz, int idade, int *decresceu){
 
@@ -674,5 +532,18 @@ arvoreAVL remover_avl(arvoreAVL raiz, int idade, int *decresceu){
             }
         }
         return raiz;
+    }
+}
+
+// Função para buscar um aluno por idade na árvore AVL
+arvoreAVL buscaPorIdade(arvoreAVL raiz, int idade) {
+    if (raiz == NULL || raiz->dado->idade == idade) {
+        return raiz;
+    }
+
+    if (idade < raiz->dado->idade) {
+        return buscaPorIdade(raiz->esq, idade);
+    } else {
+        return buscaPorIdade(raiz->dir, idade);
     }
 }

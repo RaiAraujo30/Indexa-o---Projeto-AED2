@@ -21,7 +21,8 @@ typedef struct no {
 
 typedef no* arvoreAVL;
 
-arvoreAVL inserir_avl(arvoreAVL raiz, int valor,int idade ,int *cresceu);
+arvoreAVL inserir_avl(arvoreAVL raiz,tipo_avl *valor ,int *cresceu);
+void inicializar_avl(arvoreAVL *raiz);
 void pre_order_Avl(arvoreAVL raiz);
 void in_order_Avl(arvoreAVL raiz, tabela *tab);
 void pos_order_Avl(arvoreAVL raiz);
@@ -37,12 +38,13 @@ int altura_Avl(arvoreAVL raiz);
 arvoreAVL descendentes_Avl(int valor, arvoreAVL raiz);
 arvoreAVL remover_Avl(arvoreAVL raiz, int valor);
 
+arvoreAVL buscaPorIdade(arvoreAVL raiz, int idade);
 void imprimir_elemento_avl(arvoreAVL raiz, tabela *tab);
 void adicionarAlunoAvl(tabela *tab, dado *aluno);
 void salvar_arquivoAvl(char *nome, arvoreAVL a);
 int inicializarTabelaAvl(tabela *tab);
 dado *ler_dados_avl();
-arvoreAVL carregar_arquivoAvl(char *nome, arvoreAVL a, int *cresceu);
+arvoreAVL carregar_arquivoAvl(char *nome, arvoreAVL a);
 void finalizar_avl(tabela *tab);
 
 #endif

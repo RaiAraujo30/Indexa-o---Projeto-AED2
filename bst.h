@@ -34,6 +34,7 @@ void imprimir_elemento(arvore_bst raiz, tabela * tab);
 void tirar_enter(char *string);
 
 dado * ler_dados();
+arvore_bst buscar_bst(arvore_bst raiz, int matricula);
 void adicionarAluno(tabela *tab, dado *aluno);
 void salvar_arquivo(char *nome, arvore_bst a);
 void salvar_auxiliar(arvore_bst raiz, FILE *arq);
